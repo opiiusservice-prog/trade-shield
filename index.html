@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free Sanctions Name Check (OFAC, BIS, UN, UK) | Hugo Trade Shield</title>
+<meta name="description" content="Free sanctions check: search any person, company or ship against the US OFAC SDN, BIS Entity List, UN and UK sanctions lists in one second. Runs in your browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 2 4 6v9c0 7.5 5.1 13.4 12 15 6.9-1.6 12-7.5 12-15V6z' fill='%23d97706'/></svg>">
+<style>
+  :root { --ink: #0f1b2d; --ink2: #43506a; --mute: #6b768a; --line: #e3e7ee; --bg: #f6f7f9; --card: #fff; --amber: #d97706; --amber2: #fff4e0;
+    --red: #b42318; --red2: #fdecea; --green: #15803d; --green2: #e8f6ee; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font: 16px/1.55 "Inter", "Segoe UI", system-ui, -apple-system, sans-serif; color: var(--ink); background: var(--bg); }
+  a { color: inherit; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+  header { background: var(--ink); color: #fff; }
+  header .wrap { display: flex; align-items: center; gap: 12px; height: 62px; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; text-decoration: none; }
+  .logo small { font-weight: 400; opacity: .6; font-size: 13px; }
+  header nav { margin-left: auto; display: flex; gap: 22px; font-size: 14px; }
+  header nav a { text-decoration: none; opacity: .8; }
+  header nav a:hover { opacity: 1; }
+  .hero { background: var(--ink); color: #fff; padding: 42px 0 120px; }
+  .hero h1 { font-size: clamp(28px, 4.4vw, 44px); line-height: 1.15; letter-spacing: -.02em; max-width: 780px; }
+  .hero p { color: #c4ccda; margin-top: 14px; max-width: 700px; font-size: 17px; }
+  .tool { background: var(--card); border-radius: 16px; box-shadow: 0 20px 50px rgba(15, 27, 45, .14); margin-top: -90px; padding: 22px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .tabs button { border: 0; background: none; font: inherit; font-size: 14px; padding: 7px 14px; border-radius: 8px; color: var(--ink2); cursor: pointer; }
+  .tabs button.on { background: var(--amber2); color: #92400e; font-weight: 600; }
+  .row { display: flex; gap: 10px; }
+  input[type=text], textarea { flex: 1; font: inherit; font-size: 18px; padding: 14px 16px; border: 1.5px solid var(--line); border-radius: 10px; outline: none; background: #fff; color: var(--ink); }
+  textarea { font-size: 15px; min-height: 150px; resize: vertical; width: 100%; }
+  input:focus, textarea:focus { border-color: var(--amber); }
+  .btn { font: inherit; font-weight: 600; border: 0; border-radius: 10px; padding: 0 26px; background: var(--amber); color: #fff; cursor: pointer; white-space: nowrap; }
+  .btn:hover { background: #b45309; }
+  .btn.sec { background: #fff; color: var(--ink); border: 1.5px solid var(--line); padding: 10px 16px; font-size: 14px; }
+  .meta { font-size: 13px; color: var(--mute); margin-top: 10px; }
+  #out { margin-top: 18px; }
+  .res { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-top: 10px; }
+  .res.clear { background: var(--green2); border-color: #bfe5cc; }
+  .res.hit { background: var(--red2); border-color: #f5c2bd; }
+  .res.maybe { background: var(--amber2); border-color: #f7d9a8; }
+  .res h3 { font-size: 16px; }
+  .m { display: grid; grid-template-columns: 1fr auto; gap: 4px 14px; padding: 10px 0; border-top: 1px solid rgba(0, 0, 0, .07); font-size: 14px; }
+  .m:first-of-type { border-top: 0; }
+  .m b { font-size: 15px; }
+  .tag { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: #fff; border: 1px solid var(--line); white-space: nowrap; align-self: start; }
+  .m .d { color: var(--ink2); grid-column: 1 / -1; }
+  .actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  table.batch { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
+  table.batch td, table.batch th { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .ok { color: var(--green); font-weight: 600; } .bad { color: var(--red); font-weight: 600; } .warn { color: #b45309; font-weight: 600; }
+  section { padding: 56px 0 0; }
+  h2 { font-size: clamp(24px, 3.2vw, 32px); letter-spacing: -.015em; line-height: 1.2; }
+  .lead { color: var(--ink2); margin-top: 10px; max-width: 720px; font-size: 17px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; margin-top: 26px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  .card h3 { font-size: 17px; margin-bottom: 6px; }
+  .card p { color: var(--ink2); font-size: 15px; }
+  .num { display: inline-flex; width: 28px; height: 28px; border-radius: 50%; background: var(--amber2); color: #92400e; font-weight: 700; font-size: 14px; align-items: center; justify-content: center; margin-bottom: 10px; }
+  .price { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; margin-top: 26px; }
+  .plan { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 26px; }
+  .plan.main { border: 2px solid var(--amber); }
+  .plan .amt { font-size: 40px; font-weight: 700; letter-spacing: -.02em; margin: 8px 0 2px; }
+  .plan .amt small { font-size: 16px; font-weight: 400; color: var(--mute); }
+  .plan ul { list-style: none; margin: 16px 0 20px; }
+  .plan li { padding: 5px 0 5px 26px; position: relative; font-size: 15px; color: var(--ink2); }
+  .plan li::before { content: ""; position: absolute; left: 4px; top: 12px; width: 10px; height: 6px; border-left: 2px solid var(--green); border-bottom: 2px solid var(--green); transform: rotate(-45deg); }
+  .plan .btn { display: inline-block; padding: 13px 22px; text-decoration: none; }
+  .note { font-size: 14px; color: var(--mute); margin-top: 14px; }
+  .fine { background: #eef1f5; border-radius: 12px; padding: 18px 20px; margin-top: 40px; font-size: 14px; color: var(--ink2); }
+  footer { padding: 40px 0 50px; font-size: 13px; color: var(--mute); }
+  #printhead { display: none; }
+  @media (max-width: 640px) { .row { flex-direction: column; } .btn { padding: 14px; } header nav { display: none; } .tool { padding: 16px; } }
+  @media print {
+    header, .hero, .tabs, .row, #batchbox, section, .fine, footer, .actions, .meta.hide-print { display: none !important; }
+    body { background: #fff; } .tool { box-shadow: none; margin: 0; padding: 0; } #printhead { display: block; margin-bottom: 14px; }
+  }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="logo" href="#"><svg width="26" height="26" viewBox="0 0 32 32"><path d="M16 2 4 6v9c0 7.5 5.1 13.4 12 15 6.9-1.6 12-7.5 12-15V6z" fill="#d97706"/><path d="m11 16 3.5 3.5L21.5 12" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Hugo Trade Shield <small>by OPIIUS</small></a>
+  <nav><a href="#check">Free check</a><a href="#desk">For your team</a><a href="#pricing">Pricing</a></nav>
+</div></header>
+
+<div class="hero"><div class="wrap">
+  <h1>Check any name against US, UN and UK sanctions lists in one second.</h1>
+  <p>Free. People, companies and ships from OFAC, BIS, the State Department, the UN Security Council and the UK. The check runs in your browser, so the names you type never leave your computer.</p>
+</div></div>
+
+<div class="wrap" id="check">
+  <div class="tool">
+    <div id="printhead"><h2>Sanctions name check</h2><div id="printmeta" class="meta"></div></div>
+    <div class="tabs"><button id="t1" class="on">One name</button><button id="t2">A list (up to 25 names)</button></div>
+    <div class="row" id="onebox">
+      <input type="text" id="q" placeholder="Type a person, company or ship name" autocomplete="off">
+      <button class="btn" id="go">Check</button>
+    </div>
+    <div id="batchbox" style="display:none">
+      <textarea id="qs" placeholder="One name per line, for example:&#10;Acme Trading LLC&#10;Mahan Air&#10;John Smith"></textarea>
+      <div class="actions"><button class="btn" id="go2" style="padding:12px 24px">Check the list</button></div>
+    </div>
+    <div class="meta hide-print" id="status">Loading the lists…</div>
+    <div id="out"></div>
+  </div>
+</div>
+
+<section id="desk"><div class="wrap">
+  <h2>Checking every customer by hand?</h2>
+  <p class="lead">If you ship goods abroad, every new customer and every consignee should be checked before the goods leave. US sanctions penalties apply even when you didn't know. Government search sites check one name at a time, and they keep no record.</p>
+  <p class="lead"><b>Hugo Trade Shield</b> is a small app that sits by your mouse on your Windows PC and does the checking with you.</p>
+  <div class="grid">
+    <div class="card"><div class="num">1</div><h3>Box any name, anywhere</h3><p>A name in an email, a booking form or an invoice PDF: draw a box around it and Hugo checks it on the spot. No copy and paste.</p></div>
+    <div class="card"><div class="num">2</div><h3>Check your whole customer list</h3><p>Drop in your customer and consignee list as Excel or CSV. Every name is checked, with no limit and no fee per check.</p></div>
+    <div class="card"><div class="num">3</div><h3>Re-checks when the lists change</h3><p>The lists change every week. Hugo re-checks everyone you have already cleared and tells you only what changed.</p></div>
+    <div class="card"><div class="num">4</div><h3>Proof for every check</h3><p>A dated record of each check: which name, which lists, which version of the lists, and who cleared it. Ready if anyone asks.</p></div>
+    <div class="card"><div class="num">5</div><h3>Your customer list stays with you</h3><p>The lists come to your PC and the matching happens there. Your customer names are never uploaded to us.</p></div>
+    <div class="card"><div class="num">6</div><h3>Set up in two minutes</h3><p>Download, open, start checking. No integration project, no contract, cancel any month.</p></div>
+  </div>
+</div></section>
+
+<section id="pricing"><div class="wrap">
+  <h2>Simple pricing</h2>
+  <p class="lead">A flat price per company. No per-check fees, because checking more should never cost more.</p>
+  <div class="price">
+    <div class="plan"><h3>Free check</h3><div class="amt">$0</div><ul><li>One name, or up to 25 at a time</li><li>US, UN and UK lists</li><li>Save a proof page for each check</li></ul><a class="btn sec" href="#check">Use it now</a></div>
+    <div class="plan main"><h3>Hugo Trade Shield</h3><div class="amt">$99<small> / month per company</small></div>
+      <ul><li>Box-any-name checking on your PC, up to 3 users</li><li>Unlimited customer list checks</li><li>Automatic re-checks when lists change</li><li>A dated proof log for every check</li><li>Email help from the person who builds it</li></ul>
+      <a class="btn" id="pilot" href="#">Ask for a free 30-day pilot</a>
+      <p class="note"><b>Founding offer:</b> the first 10 companies pay $49 a month, locked for 12 months, after a free 30-day pilot.</p></div>
+  </div>
+  <div class="fine"><b>Please read.</b> This is a screening aid, not legal advice. A possible match is not a confirmed match: compare the date of birth, address, nationality and ID numbers before you decide. Lists covered: the US Consolidated Screening List (OFAC SDN and non-SDN lists, BIS Entity, Denied Persons, Unverified and Military End User lists, State Department lists), the UN Security Council Consolidated List, and the UK Sanctions List. The EU list is not included yet. Keep following your own compliance procedures.</div>
+</div></section>
+
+<footer><div class="wrap">Hugo Trade Shield by OPIIUS · Lists from data.trade.gov, un.org and gov.uk (public data) · <span id="foot"></span></div></footer>
+
+<script src="match.js"></script>
+<script>
+const CONTACT = "opiiusservice@gmail.com";
+const $ = (id) => document.getElementById(id);
+let IDX = null, DOC = null;
+const esc = (s) => String(s || "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const LISTDATE = () => DOC ? new Date(DOC.built + "T00:00:00").toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "";
+
+$("pilot").href = `mailto:${CONTACT}?subject=${encodeURIComponent("Hugo Trade Shield pilot")}&body=${encodeURIComponent("Hi,\n\nWe'd like to try Hugo Trade Shield free for 30 days.\n\nCompany:\nWebsite:\nRoughly how many new customers or consignees do you check each month:\n\nThanks")}`;
+
+fetch("lists.json").then((r) => r.json()).then((d) => {
+  DOC = d; IDX = TSMatch.prepare(d);
+  const n = d.e.length.toLocaleString();
+  $("status").textContent = `${n} listed names ready · lists downloaded ${LISTDATE()}`;
+  $("foot").textContent = `Lists downloaded ${LISTDATE()}`;
+}).catch(() => { $("status").textContent = "The lists could not be loaded. Please refresh the page."; });
+
+function verdict(r) { return !r.length ? "clear" : r[0].score >= 0.97 ? "hit" : "maybe"; }
+function detail(m) {
+  const e = m.entry;
+  const bits = [e[1], e[4] && "country: " + e[4], e[5] && "program: " + e[5], e[6] && String(e[6]).length <= 20 && "ref: " + e[6]].filter(Boolean).map(esc).join(" · ");
+  return `<div class="m"><b>${esc(e[2])}</b><span class="tag">${esc(e[0])}</span>
+    <div class="d">${m.via ? `Matched the alias “${esc(m.via)}”. ` : ""}${bits}. Match strength ${Math.round(m.score * 100)}%.</div></div>`;
+}
+function stamp() { return new Date().toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }); }
+function one() {
+  const q = $("q").value.trim();
+  if (!IDX || q.length < 3) return;
+  const r = TSMatch.search(IDX, q);
+  const v = verdict(r), when = stamp();
+  $("printmeta").textContent = `Checked on ${when} against ${DOC.e.length.toLocaleString()} listed names (lists downloaded ${LISTDATE()}).`;
+  const head = { clear: `No match found for “${esc(q)}”`, hit: `Close match found for “${esc(q)}”: check before you ship`, maybe: `Possible match for “${esc(q)}”: check the details` }[v];
+  const sub = { clear: "Not found on the US, UN or UK lists checked here.", hit: "A listed name is the same or nearly the same. Compare the details below with your customer before going ahead.", maybe: "A listed name is similar. Most similar names turn out to be different people or companies, so compare the details below." }[v];
+  $("out").innerHTML = `<div class="res ${v}"><h3>${head}</h3><p class="meta" style="margin-top:4px">${sub} Checked ${when}.</p>${r.map(detail).join("")}</div>
+    <div class="actions"><button class="btn sec" onclick="window.print()">Save proof of this check</button></div>`;
+}
+async function batch() {
+  if (!IDX) return;
+  const names = $("qs").value.split(/\n|\r/).map((s) => s.trim()).filter((s) => s.length >= 3);
+  const list = names.slice(0, 25), when = stamp();
+  $("printmeta").textContent = `Checked on ${when} against ${DOC.e.length.toLocaleString()} listed names (lists downloaded ${LISTDATE()}).`;
+  let rows = "", flagged = 0;
+  for (let i = 0; i < list.length; i++) {
+    $("out").innerHTML = `<p class="meta">Checking ${i + 1} of ${list.length}…</p>`;
+    await new Promise((r) => setTimeout(r, 0));
+    const r = TSMatch.search(IDX, list[i], 0.88, 3), v = verdict(r);
+    if (v !== "clear") flagged++;
+    rows += `<tr><td>${esc(list[i])}</td><td class="${v === "clear" ? "ok" : v === "hit" ? "bad" : "warn"}">${v === "clear" ? "No match" : v === "hit" ? "Close match" : "Possible match"}</td>
+      <td>${r.map((m) => `${esc(m.entry[2])} <span class="tag">${esc(m.entry[0])}</span>${m.entry[4] ? " · " + esc(m.entry[4]) : ""}`).join("<br>")}</td></tr>`;
+  }
+  const more = names.length > 25 ? `<p class="meta">Only the first 25 names were checked. Hugo Trade Shield checks whole customer lists with no limit.</p>` : "";
+  $("out").innerHTML = `<div class="res ${flagged ? "maybe" : "clear"}"><h3>${list.length} names checked: ${flagged ? flagged + " to look at" : "no matches"}</h3>
+    <p class="meta">Checked ${when}.</p><table class="batch"><tr><th>Name</th><th>Result</th><th>Closest listed names</th></tr>${rows}</table></div>${more}
+    <div class="actions"><button class="btn sec" onclick="window.print()">Save proof of this check</button></div>`;
+}
+$("go").onclick = one;
+$("q").addEventListener("keydown", (e) => { if (e.key === "Enter") one(); });
+$("go2").onclick = batch;
+$("t1").onclick = () => { $("t1").className = "on"; $("t2").className = ""; $("onebox").style.display = "flex"; $("batchbox").style.display = "none"; };
+$("t2").onclick = () => { $("t2").className = "on"; $("t1").className = ""; $("onebox").style.display = "none"; $("batchbox").style.display = "block"; };
+</script>
+</body>
+</html>
