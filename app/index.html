@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
+<!-- The browser itself blocks this page from sending data anywhere except its own site (the list file). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <title>Hugo Trade Shield · Screening desk</title>
 <!-- The Hugo Trade Shield desk app. Everything a customer types stays in this browser (IndexedDB).
      The only thing this page downloads is the public sanctions list file (../lists.json). -->

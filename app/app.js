@@ -325,8 +325,9 @@
       ${S.parties.map((p) => { const t = (p.matches || []).find(E.counts); return `<tr><td>${esc(p.name)}</td><td>${esc(p.cc)}</td><td>${PILL[E.status(p)]}</td><td>${t ? esc(t.name) + " (" + esc(t.list) + ")" : "–"}</td><td>${nice(p.checked)}</td></tr>`; }).join("")}</table>
       ${decided.length ? `<h2>Decisions made by a person</h2><table><tr><th>Time</th><th>Party</th><th>Decision</th><th>Reason</th><th>By</th></tr>${decided.map((a) => `<tr><td>${nice(a.t)}</td><td>${esc(a.party)} ${esc(a.cc)}</td><td>${esc(a.act)}</td><td>${esc(a.detail)}</td><td>${esc(a.by)}</td></tr>`).join("")}</table>` : ""}
       <p style="color:#6b768a;font-size:12px;margin-top:18px">A record of screening done with Hugo Trade Shield. It is not legal advice and does not replace a check of the official source for any match. The EU list is not included.</p>
-      <button onclick="print()">Print or save as PDF</button></body></html>`);
+      <button id="pr">Print or save as PDF</button></body></html>`);
     w.document.close();
+    w.document.getElementById("pr").onclick = () => w.print();
   }
 
   // ---------- wiring ----------
