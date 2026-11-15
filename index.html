@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Free Sanctions Name Check (OFAC, BIS, UN, UK) | Hugo Trade Shield</title>
-<meta name="description" content="Free sanctions check: search any person, company or ship against the US OFAC SDN, BIS Entity List, UN and UK sanctions lists in one second. Runs in your browser.">
+<meta name="description" content="Free sanctions check: search any person, company or ship against the US (OFAC, BIS), EU, UK, UN and Canada sanctions lists in one second. Runs in your browser.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 2 4 6v9c0 7.5 5.1 13.4 12 15 6.9-1.6 12-7.5 12-15V6z' fill='%23d97706'/></svg>">
 <style>
   :root { --ink: #0f1b2d; --ink2: #43506a; --mute: #6b768a; --line: #e3e7ee; --bg: #f6f7f9; --card: #fff; --amber: #d97706; --amber2: #fff4e0;
@@ -86,8 +86,8 @@
 </div></header>
 
 <div class="hero"><div class="wrap">
-  <h1>Check any name against US, UN and UK sanctions lists in one second.</h1>
-  <p>Free. People, companies and ships from OFAC, BIS, the State Department, the UN Security Council and the UK. The check runs in your browser, so the names you type never leave your computer.</p>
+  <h1>Check any name against US, EU, UK, UN and Canada sanctions lists in one second.</h1>
+  <p>Free. People, companies and ships from OFAC, BIS, the State Department, the EU, the UK, the UN Security Council and Canada. The check runs in your browser, so the names you type never leave your computer.</p>
 </div></div>
 
 <div class="wrap" id="check">
@@ -125,16 +125,16 @@
   <h2>Simple pricing</h2>
   <p class="lead">A flat price per company. No per-check fees, because checking more should never cost more.</p>
   <div class="price">
-    <div class="plan"><h3>Free check</h3><div class="amt">$0</div><ul><li>One name, or up to 25 at a time</li><li>US, UN and UK lists</li><li>Save a proof page for each check</li></ul><a class="btn sec" href="#check">Use it now</a></div>
+    <div class="plan"><h3>Free check</h3><div class="amt">$0</div><ul><li>One name, or up to 25 at a time</li><li>US, EU, UK, UN and Canada lists</li><li>Save a proof page for each check</li></ul><a class="btn sec" href="#check">Use it now</a></div>
     <div class="plan main"><h3>Hugo Trade Shield</h3><div class="amt">$120<small> / month per company</small></div>
-      <ul><li>Name, email, phone and website checks</li><li>Unlimited customer list checks</li><li>Automatic re-checks when lists change</li><li>A dated proof log for every check</li><li>Email help from the person who builds it</li></ul>
+      <ul><li>Name, email, phone and website checks</li><li>A screening certificate for every shipment file</li><li>A written screening procedure for your team</li><li>Unlimited customer list checks</li><li>Automatic re-checks when lists change</li><li>A dated proof log for every check</li><li>Email help from the person who builds it</li></ul>
       <a class="btn" id="pilot" href="#">Ask for a free 30-day pilot</a> <a class="btn sec" href="app/" style="margin-left:6px">Open the desk app</a>
-      <p class="note"><b>Founding offer:</b> the first 10 companies pay $49 a month, locked for 12 months, after a free 30-day pilot.</p></div>
+      <p class="note">Try it free for 30 days. Then $120 a month for the whole company. No contract, no per-check fees, cancel any month.</p></div>
   </div>
-  <div class="fine"><b>Please read.</b> This is a screening aid, not legal advice. A possible match is not a confirmed match: compare the date of birth, address, nationality and ID numbers before you decide. Lists covered: the US Consolidated Screening List (OFAC SDN and non-SDN lists, BIS Entity, Denied Persons, Unverified and Military End User lists, State Department lists), the UN Security Council Consolidated List, and the UK Sanctions List. The EU list is not included yet. Keep following your own compliance procedures.</div>
+  <div class="fine"><b>Please read.</b> This is a screening aid, not legal advice. A possible match is not a confirmed match: compare the date of birth, address, nationality and ID numbers before you decide. Lists covered: the US Consolidated Screening List (OFAC SDN and non-SDN lists, BIS Entity, Denied Persons, Unverified and Military End User lists, State Department lists), the UN Security Council Consolidated List, the UK Sanctions List, the EU consolidated financial sanctions list and Canada's SEMA list. Keep following your own compliance procedures.</div>
 </div></section>
 
-<footer><div class="wrap">Hugo Trade Shield by OPIIUS · Lists from data.trade.gov, un.org and gov.uk (public data) · <span id="foot"></span></div></footer>
+<footer><div class="wrap">Hugo Trade Shield by OPIIUS · Lists from data.trade.gov, europa.eu, gov.uk, un.org and international.gc.ca (public data) · <span id="foot"></span></div></footer>
 
 <script src="match.js"></script>
 <script>
@@ -168,7 +168,7 @@ function one() {
   const v = verdict(r), when = stamp();
   $("printmeta").textContent = `Checked on ${when} against ${DOC.e.length.toLocaleString()} listed names (lists downloaded ${LISTDATE()}).`;
   const head = { clear: `No match found for “${esc(q)}”`, hit: `Close match found for “${esc(q)}”: check before you ship`, maybe: `Possible match for “${esc(q)}”: check the details` }[v];
-  const sub = { clear: "Not found on the US, UN or UK lists checked here.", hit: "A listed name is the same or nearly the same. Compare the details below with your customer before going ahead.", maybe: "A listed name is similar. Most similar names turn out to be different people or companies, so compare the details below." }[v];
+  const sub = { clear: "Not found on the US, EU, UK, UN or Canada lists checked here.", hit: "A listed name is the same or nearly the same. Compare the details below with your customer before going ahead.", maybe: "A listed name is similar. Most similar names turn out to be different people or companies, so compare the details below." }[v];
   $("out").innerHTML = `<div class="res ${v}"><h3>${head}</h3><p class="meta" style="margin-top:4px">${sub} Checked ${when}.</p>${r.map(detail).join("")}</div>
     <div class="actions"><button class="btn sec" onclick="window.print()">Save proof of this check</button></div>`;
 }

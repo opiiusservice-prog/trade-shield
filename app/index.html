@@ -110,6 +110,7 @@
   <div class="tabs">
     <button class="tab on" data-t="today">Today</button>
     <button class="tab" data-t="book">Customers <span class="n" id="nbook" style="background:var(--mute)"></span></button>
+    <button class="tab" data-t="ship">Shipments <span class="n" id="nship" style="background:var(--mute)"></span></button>
     <button class="tab" data-t="review">Review <span class="n" id="nrev"></span></button>
     <button class="tab" data-t="log">Proof log</button>
     <button class="tab" data-t="set">Settings</button>
@@ -159,6 +160,23 @@
     </div>
   </section>
 
+  <section id="t-ship" style="display:none">
+    <div class="card">
+      <h2>Check a shipment</h2>
+      <div class="sub">Screen every party on one booking and keep the certificate in the shipment file. One party per line. Start a line with its role if you like: <b>Shipper:</b>, <b>Consignee:</b>, <b>Notify:</b>, <b>End user:</b>, <b>Supplier:</b>, <b>Vessel:</b>, <b>Bank:</b>.</div>
+      <label class="field" style="max-width:360px">Booking, house bill or file number<input type="text" id="sh-ref" placeholder="e.g. HBL-2026-1187" autocomplete="off"></label>
+      <textarea id="sh-inp" spellcheck="false" placeholder="Shipper: Northwind Pumps Ltd, GB&#10;Consignee: Al Noor Trading LLC, AE, sales@alnoor-trading.example, +971 4 555 0100&#10;Notify: Gulf Line Agencies, AE&#10;Vessel: IMO 9123456"></textarea>
+      <div class="acts"><button class="btn pri" id="sh-go">Check shipment</button><div class="prog" id="sh-prog"><b></b></div></div>
+      <div id="sh-note" style="margin-top:12px"></div>
+    </div>
+    <div id="sh-res"></div>
+    <div class="card tw">
+      <h3>Shipments checked</h3>
+      <div class="sub">Each one keeps its certificate. The result follows your decisions and the daily watch.</div>
+      <table><thead><tr><th>Reference</th><th>Result</th><th>Parties</th><th>Checked</th><th>By</th></tr></thead><tbody id="sh-rows"></tbody></table>
+    </div>
+  </section>
+
   <section id="t-review" style="display:none">
     <div class="card tw">
       <h2>Review queue</h2>
@@ -190,7 +208,7 @@
         <div class="sub" id="licline">Trial: quick checks are free. Save up to 5 customers to try the daily watch.</div>
         <label class="field">Licence key<input type="text" id="s-key" placeholder="TS1.…" autocomplete="off" spellcheck="false"></label>
         <button class="btn pri" id="s-lic">Activate</button> <span class="lst" id="s-licok"></span>
-        <p class="note">No key yet? <a id="askpilot" href="#">Ask for a free 30-day pilot</a>. Then $120 a month per company, cancel any month.</p>
+        <p class="note">No key yet? <a id="askpilot" href="#">Ask for a free 30-day pilot</a>. Then $120 a month per company. No contract, cancel any month.</p>
       </div>
       <div class="card">
         <h2>Your data</h2>
@@ -201,7 +219,13 @@
       <div class="card">
         <h2>What is checked</h2>
         <div class="sub" id="covline" style="margin-bottom:6px"></div>
-        <p class="note" style="margin-top:0">US Consolidated Screening List (OFAC SDN and other OFAC lists, BIS Entity List, Denied Persons, Unverified and Military End User lists, State Department lists), the UN Security Council list and the UK Sanctions List. The EU list is not included yet. A screening aid, not legal advice: a match is a lead to confirm on the official source.</p>
+        <p class="note" style="margin-top:0">US Consolidated Screening List (OFAC SDN and other OFAC lists, BIS Entity List, Denied Persons, Unverified and Military End User lists, State Department lists), the EU consolidated financial sanctions list, the UK Sanctions List, the UN Security Council list and Canada's SEMA list. A screening aid, not legal advice: a match is a lead to confirm on the official source.</p>
+      </div>
+      <div class="card">
+        <h2>Your written screening procedure</h2>
+        <div class="sub">Regulators expect a written procedure that says who is screened, when, and what happens on a match. This makes a one-page starter with your company name, ready to print and sign.</div>
+        <button class="btn pri" id="proc">Open the procedure</button>
+        <p class="note">A starter template. Have your trade counsel review it. Not legal advice.</p>
       </div>
     </div>
   </section>
@@ -210,7 +234,7 @@
 <div class="shade" id="shade"></div>
 <aside class="drawer" id="drawer"></aside>
 
-<footer>Hugo Trade Shield by OPIIUS. Data: public lists from data.trade.gov, the UN Security Council and the UK FCDO. Your customer list is stored only in this browser.
+<footer>Hugo Trade Shield by OPIIUS. Data: public lists from the US (data.trade.gov), the EU, the UK FCDO, the UN Security Council and Canada. Your customer list is stored only in this browser.
   A screening aid, not legal advice. <a href="../">Free single check</a> · <a href="mailto:opiiusservice@gmail.com">opiiusservice@gmail.com</a></footer>
 
 <script src="../match.js"></script>

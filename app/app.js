@@ -21,6 +21,8 @@
     "US State ITAR Debarred": "Barred from US defence trade.",
     "US BIS Military End User": "A licence is needed for listed items.",
     "US BIS Unverified": "Extra checks and statements are needed before export.",
+    "EU Sanctions List": "EU asset freeze: no funds or goods may be made available to them from the EU.",
+    "Canada Sanctions (SEMA)": "Canadian sanctions: dealings by persons in Canada and Canadians abroad are prohibited.",
   };
   const PILL = { hit: "On a list", rev: "Check", clr: "Clear", ok: "Cleared by you", blk: "Stopped", new: "Not checked yet" };
   const SAMPLE = ["Northwind Pumps Ltd, GB", "Bluefin Marine Supplies, SG", "Atlas Tools GmbH, DE", "Hikvision, CN", "Kestrel Agro Exports, KE",
@@ -29,7 +31,7 @@
     "Shahed Aviation Industries, IR", "Vela Coatings BV, NL", "Huizhou Youli Fushi Co Ltd, CN, yk@yolimachine.com", "Sunrise Ceramics LLC, US",
     "Korea Kwangson Banking Corporation, KP", "Huawei Technologies Co., Ltd., CN"];
 
-  let S = { v: 1, org: { co: "", me: "" }, key: "", parties: [], audit: [], alerts: [], lastBuilt: "", lastRun: "", backupAt: "" };
+  let S = { v: 1, org: { co: "", me: "" }, key: "", parties: [], shipments: [], audit: [], alerts: [], lastBuilt: "", lastRun: "", backupAt: "" };
   let eng = null, lic = null, mode = "trial", busy = false, openId = null;
 
   // ---------- storage ----------
@@ -170,6 +172,7 @@
   }
   function bind(tbody) { tbody.querySelectorAll("tr[data-id]").forEach((tr) => (tr.onclick = () => open(tr.dataset.id))); }
   function draw() {
+    drawShip();
     const c = count();
     $("k-all").textContent = S.parties.length; $("k-clr").textContent = c.clr + c.ok; $("k-rev").textContent = c.rev; $("k-hit").textContent = c.hit;
     $("nbook").textContent = S.parties.length || ""; $("nrev").textContent = (c.rev + c.hit) || "";
@@ -210,7 +213,7 @@
   }
   function tab(t) {
     document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("on", b.dataset.t === t));
-    ["today", "book", "review", "log", "set"].forEach((k) => ($("t-" + k).style.display = k === t ? "" : "none"));
+    ["today", "book", "ship", "review", "log", "set"].forEach((k) => ($("t-" + k).style.display = k === t ? "" : "none"));
     window.scrollTo(0, 0);
   }
 
@@ -234,7 +237,7 @@
     let h = `<button class="x" id="dx" aria-label="Close">×</button><h2>${esc(p.name)}</h2>
       <div><span class="pill ${st}">${PILL[st]}</span> <span class="lst">${esc(p.cc)} · last checked ${nice(p.checked)} · lists of ${niceDay(p.lists)}</span></div>`;
     if (p.flag) h += `<p class="flag" style="margin-top:10px">⚑ Destination: ${esc(E.RISKY[p.flag])}. US sanctions or export limits are heavy here. Check the current rules before you ship.</p>`;
-    if (rel.length) h += rel.map((m) => matchHtml(p, m)).join("") + `<p class="lst">Confirm on the official source: <a href="https://sanctionssearch.ofac.treas.gov/" target="_blank" rel="noopener">OFAC search</a> · <a href="https://www.trade.gov/consolidated-screening-list" target="_blank" rel="noopener">US Consolidated Screening List</a> · <a href="https://search-uk-sanctions-list.service.gov.uk/" target="_blank" rel="noopener">UK list</a></p>`;
+    if (rel.length) h += rel.map((m) => matchHtml(p, m)).join("") + `<p class="lst">Confirm on the official source: <a href="https://sanctionssearch.ofac.treas.gov/" target="_blank" rel="noopener">OFAC search</a> · <a href="https://www.trade.gov/consolidated-screening-list" target="_blank" rel="noopener">US Consolidated Screening List</a> · <a href="https://search-uk-sanctions-list.service.gov.uk/" target="_blank" rel="noopener">UK list</a> · <a href="https://www.sanctionsmap.eu/" target="_blank" rel="noopener">EU sanctions map</a></p>`;
     else h += `<p style="margin:14px 0">No listed party is close to this one${far[0] ? ` (the closest name is only ${pct(far[0].score)}: ${esc(far[0].name)})` : ""}.</p>`;
     if (st === "hit" || st === "rev") {
       const onlyFlag = !rel.filter((m) => !(p.cleared || []).includes(m.ref)).length;
@@ -319,15 +322,130 @@
       table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid #e3e7ee;vertical-align:top}th{color:#6b768a;font-size:11px;text-transform:uppercase}
       .k{display:flex;gap:28px;margin:10px 0}.k b{font-size:22px;display:block}.demo{color:#b42318;font-weight:700;letter-spacing:.08em}button{margin-top:20px;padding:8px 16px}@media print{button{display:none}}</style></head><body>
       <div class="top"><div><h1>Screening certificate</h1><div>${esc(S.org.co || "Company name not set")} · Hugo Trade Shield</div>${trial}</div><div style="text-align:right">Issued ${nice(new Date().toISOString())}<br>Prepared by: ${esc(S.org.me || "not set")}</div></div>
-      <p>${S.parties.length} parties are on the watch list. Each was screened by name, and by any email, phone, website or registration number on file, against ${eng ? eng.total.toLocaleString("en-US") : ""} listed parties from the US Consolidated Screening List (OFAC SDN and other OFAC lists, BIS Entity List, Denied Persons, Unverified and Military End User lists, State Department lists), the UN Security Council consolidated list and the UK Sanctions List. List version: ${esc(S.lastBuilt)}. Last full re-check: ${nice(S.lastRun)}.</p>
+      <p>${S.parties.length} parties are on the watch list. Each was screened by name, and by any email, phone, website or registration number on file, against ${eng ? eng.total.toLocaleString("en-US") : ""} listed parties from the US Consolidated Screening List (OFAC SDN and other OFAC lists, BIS Entity List, Denied Persons, Unverified and Military End User lists, State Department lists), the EU consolidated financial sanctions list, the UK Sanctions List, the UN Security Council consolidated list and Canada's SEMA list. List version: ${esc(S.lastBuilt)}. Last full re-check: ${nice(S.lastRun)}.</p>
       <div class="k"><div><b>${c.clr}</b>clear</div><div><b>${c.ok}</b>cleared by a person</div><div><b>${c.rev + c.hit}</b>open for review</div><div><b>${c.blk}</b>stopped</div></div>
       <h2>Watch list</h2><table><tr><th>Party</th><th>Country</th><th>Status</th><th>Closest listed party</th><th>Last checked</th></tr>
       ${S.parties.map((p) => { const t = (p.matches || []).find(E.counts); return `<tr><td>${esc(p.name)}</td><td>${esc(p.cc)}</td><td>${PILL[E.status(p)]}</td><td>${t ? esc(t.name) + " (" + esc(t.list) + ")" : "–"}</td><td>${nice(p.checked)}</td></tr>`; }).join("")}</table>
       ${decided.length ? `<h2>Decisions made by a person</h2><table><tr><th>Time</th><th>Party</th><th>Decision</th><th>Reason</th><th>By</th></tr>${decided.map((a) => `<tr><td>${nice(a.t)}</td><td>${esc(a.party)} ${esc(a.cc)}</td><td>${esc(a.act)}</td><td>${esc(a.detail)}</td><td>${esc(a.by)}</td></tr>`).join("")}</table>` : ""}
-      <p style="color:#6b768a;font-size:12px;margin-top:18px">A record of screening done with Hugo Trade Shield. It is not legal advice and does not replace a check of the official source for any match. The EU list is not included.</p>
+      <p style="color:#6b768a;font-size:12px;margin-top:18px">A record of screening done with Hugo Trade Shield. It is not legal advice and does not replace a check of the official source for any match. </p>
       <button id="pr">Print or save as PDF</button></body></html>`);
     w.document.close();
     w.document.getElementById("pr").onclick = () => w.print();
+  }
+
+  // ---------- shipments: screen every party on one booking, keep a certificate for the file ----------
+  const ROLE = /^\s*(shipper|consignee|notify(?: party)?|end[ -]?user|buyer|seller|supplier|carrier|vessel|ship|agent|bank|customer|forwarder)\s*[:\-]\s*/i;
+  const WORST = ["blk", "hit", "rev", "new", "ok", "clr"];
+  const SHIPTXT = { blk: "Stopped", hit: "Hold: a party is on a list", rev: "Hold: a party needs a look", new: "Not checked", ok: "Clear to proceed", clr: "Clear to proceed" };
+  const cap = (s) => s[0].toUpperCase() + s.slice(1).toLowerCase();
+  const partyOf = (it) => S.parties.find((p) => p.id === it.pid);
+  function shipStatus(sh) {
+    const ps = sh.items.map(partyOf).filter(Boolean);
+    return ps.length ? WORST.find((s) => ps.some((p) => E.status(p) === s)) : "clr";
+  }
+  let shipOpen = null;
+  function shipNote(html) {
+    $("sh-note").innerHTML = html ? `<div class="notice" style="margin:0">${html}</div>` : "";
+    $("sh-note").querySelectorAll("[data-go]").forEach((a) => (a.onclick = (e) => { e.preventDefault(); tab(a.dataset.go); }));
+  }
+  function checkShipment() {
+    const ref = $("sh-ref").value.trim();
+    const lines = $("sh-inp").value.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    if (!ref) { $("sh-ref").focus(); return shipNote("Type the booking or file number first."); }
+    if (!lines.length) { $("sh-inp").focus(); return shipNote("Add the parties, one per line."); }
+    if (!eng) return shipNote("The lists are still loading. Try again in a moment.");
+    if (!canScreen()) return shipNote("Your licence has ended, so screening is paused.");
+    if (busy) return;
+    const parsed = lines.map((l) => { const m = ROLE.exec(l); return Object.assign(E.parseLine(m ? l.slice(m[0].length) : l), { role: m ? cap(m[1]) : "Party" }); }).filter((p) => p.name);
+    const key = (p) => M.norm(p.name) + "|" + (p.cc || "");
+    const have = new Map(S.parties.map((p) => [key(p), p]));
+    const fresh = new Set(parsed.filter((p) => !have.has(key(p))).map(key));
+    if (mode === "trial" && own() + fresh.size > TRIAL_MAX) return shipNote(trialMsg());
+    const now = new Date().toISOString(), items = [];
+    runBatch(parsed, $("sh-prog"), (x) => {
+      let p = have.get(key(x));
+      if (!p) { p = { id: uid(), name: x.name, cc: x.cc || "", ids: x.ids || "", added: now }; S.parties.push(p); have.set(key(x), p); }
+      else if (x.ids && !(p.ids || "").includes(x.ids)) p.ids = ((p.ids || "") + " " + x.ids).trim();
+      E.apply(p, E.screen(eng, p), eng.built, new Date().toISOString());
+      log(p, `Screened for shipment ${ref} (${x.role})`, resultText(p));
+      if (!items.some((it) => it.pid === p.id)) items.push({ pid: p.id, role: x.role });
+    }, () => {
+      const sh = { id: uid(), ref, t: now, by: S.org.me || "", lists: eng.built, items };
+      S.shipments.unshift(sh);
+      if (!S.lastBuilt) { S.lastBuilt = eng.built; S.lastRun = now; }
+      log({ id: "", name: "Shipment " + ref, cc: "" }, "Shipment screened", `${items.length} parties. ${SHIPTXT[shipStatus(sh)]}`);
+      $("sh-ref").value = ""; $("sh-inp").value = ""; shipNote("");
+      shipOpen = sh.id; save(); draw();
+    });
+  }
+  function lastDecision(pid) {
+    const a = S.audit.find((x) => x.pid === pid && /Cleared by a person|Stopped the deal/.test(x.act));
+    return a ? `${a.act}: ${a.detail}${a.by ? " (" + a.by + ", " + nice(a.t) + ")" : ""}` : "";
+  }
+  function drawShip() {
+    const rows = S.shipments || (S.shipments = []);
+    $("nship").textContent = rows.length || "";
+    $("sh-rows").innerHTML = rows.length ? rows.slice(0, 300).map((sh) => { const st = shipStatus(sh); return `<tr class="go" data-sh="${sh.id}"><td><b>${esc(sh.ref)}</b></td><td><span class="pill ${st === "new" ? "rev" : st}">${SHIPTXT[st]}</span></td><td>${sh.items.length}</td><td class="lst" style="white-space:nowrap">${nice(sh.t)}</td><td class="lst">${esc(sh.by)}</td></tr>`; }).join("")
+      : `<tr><td colspan="5" class="empty">No shipments yet. Check one above and its certificate is kept here.</td></tr>`;
+    $("sh-rows").querySelectorAll("tr[data-sh]").forEach((tr) => (tr.onclick = () => { shipOpen = tr.dataset.sh; drawShip(); window.scrollTo(0, 0); }));
+    const sh = rows.find((x) => x.id === shipOpen);
+    if (!sh) { $("sh-res").innerHTML = ""; return; }
+    const st = shipStatus(sh), hold = st === "hit" || st === "rev";
+    $("sh-res").innerHTML = `<div class="card"><h2>Shipment ${esc(sh.ref)}: ${SHIPTXT[st]}</h2>
+      <div class="sub">Checked ${nice(sh.t)} against the lists of ${niceDay(sh.lists)}. ${hold ? "Open each flagged party and decide. The result updates by itself." : st === "blk" ? "A party on this shipment was stopped." : "Every party is clear or was cleared by a person."}</div>
+      <div class="tw"><table><thead><tr><th>Role</th><th>Party</th><th>Result</th><th>Closest listed party</th></tr></thead><tbody>
+      ${sh.items.map((it) => { const p = partyOf(it); if (!p) return `<tr><td>${esc(it.role)}</td><td colspan="3" class="lst">Removed from the customer list</td></tr>`;
+        const s2 = E.status(p), top = (p.matches || []).find(E.counts);
+        return `<tr class="go" data-id="${p.id}"><td>${esc(it.role)}</td><td><b>${esc(p.name)}</b> <span class="lst">${esc(p.cc)}</span>${p.flag ? `<div class="flag">⚑ Destination: ${esc(E.RISKY[p.flag])}</div>` : ""}${p.ids ? `<div class="lst">${esc(p.ids)}</div>` : ""}</td><td><span class="pill ${s2}">${PILL[s2]}</span></td><td>${top ? esc(top.name) + `<div class="lst">${esc(top.list)}${top.kind !== "name" ? " · same " + E.KIND[top.kind] : " · " + pct(top.score)}</div>` : '<span class="lst">No close match</span>'}</td></tr>`; }).join("")}
+      </tbody></table></div>
+      <div class="acts"><button class="btn pri" id="sh-cert">Shipment certificate</button><button class="btn" id="sh-close">Close</button></div></div>`;
+    bind($("sh-res"));
+    $("sh-close").onclick = () => { shipOpen = null; drawShip(); };
+    $("sh-cert").onclick = () => shipCert(sh);
+  }
+  const PRINTCSS = `body{font:14px/1.5 "Segoe UI",system-ui,sans-serif;color:#0f1b2d;max-width:900px;margin:40px auto;padding:0 24px}
+      h1{font-size:24px;margin:0}h2{font-size:16px;margin:22px 0 4px}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #d97706;padding-bottom:14px;margin-bottom:18px}
+      table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid #e3e7ee;vertical-align:top}th{color:#6b768a;font-size:11px;text-transform:uppercase}
+      .big{font-size:20px;font-weight:700;margin:6px 0}.demo{color:#b42318;font-weight:700;letter-spacing:.08em}.sm{color:#6b768a;font-size:12px}ol{padding-left:20px}li{margin:6px 0}
+      .sign{display:flex;gap:40px;margin-top:34px}.sign div{flex:1;border-top:1px solid #0f1b2d;padding-top:4px;font-size:12px}button{margin-top:20px;padding:8px 16px}@media print{button{display:none}}`;
+  const COVER = "the US Consolidated Screening List (OFAC SDN and other OFAC lists, BIS Entity List, Denied Persons, Unverified and Military End User lists, State Department lists), the EU consolidated financial sanctions list, the UK Sanctions List, the UN Security Council consolidated list and Canada's SEMA list";
+  function printWin(title, body) {
+    const w = window.open("", "_blank");
+    if (!w) { note("Allow pop-ups for this page to open the document."); return; }
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title><style>${PRINTCSS}</style></head><body>${body}<button id="pr">Print or save as PDF</button></body></html>`);
+    w.document.close();
+    w.document.getElementById("pr").onclick = () => w.print();
+  }
+  function shipCert(sh) {
+    const st = shipStatus(sh), trial = mode === "trial" ? '<div class="demo">TRIAL COPY</div>' : "";
+    printWin("Shipment screening certificate " + sh.ref, `
+      <div class="top"><div><h1>Shipment screening certificate</h1><div>${esc(S.org.co || "Company name not set")} · Hugo Trade Shield</div>${trial}</div><div style="text-align:right">Reference: <b>${esc(sh.ref)}</b><br>Screened ${nice(sh.t)}<br>By: ${esc(sh.by || S.org.me || "not set")}</div></div>
+      <div class="big">${SHIPTXT[st]}</div>
+      <p>${sh.items.length} parties on this shipment were screened by name, and by any email, phone, website, registration or IMO number given, against ${COVER}. List version at screening: ${esc(sh.lists)}. Certificate printed ${nice(new Date().toISOString())}.</p>
+      <table><tr><th>Role</th><th>Party</th><th>Country</th><th>Identifiers screened</th><th>Result</th><th>Closest listed party</th><th>Decision by a person</th></tr>
+      ${sh.items.map((it) => { const p = partyOf(it); if (!p) return `<tr><td>${esc(it.role)}</td><td colspan="6">Removed from the customer list</td></tr>`; const t = (p.matches || []).find(E.counts);
+        return `<tr><td>${esc(it.role)}</td><td>${esc(p.name)}</td><td>${esc(p.cc)}</td><td>${esc(p.ids || "–")}</td><td>${PILL[E.status(p)]}${p.flag ? "<br>Destination: " + esc(E.RISKY[p.flag]) : ""}</td><td>${t ? esc(t.name) + " (" + esc(t.list) + ")" : "–"}</td><td>${esc(lastDecision(p.id)) || "–"}</td></tr>`; }).join("")}</table>
+      <p class="sm" style="margin-top:18px">A record of screening done with Hugo Trade Shield. It is not legal advice and does not replace a check of the official source for any match. Keep this page in the shipment file.</p>`);
+  }
+  function procedure() {
+    const co = esc(S.org.co || "[Company name]"), me = esc(S.org.me || "[Name]");
+    printWin("Sanctions screening procedure", `
+      <div class="top"><div><h1>Sanctions screening procedure</h1><div>${co}</div></div><div style="text-align:right">Version of ${niceDay(today())}<br>Owner: ${me}</div></div>
+      <p>This procedure says who we screen, when, against what, and what we do when there is a match. Everyone who handles quotes, bookings, documents or payments follows it.</p>
+      <ol>
+        <li><b>Who we screen.</b> Every party in a transaction: customer, shipper, consignee, notify party, end user, supplier, overseas agent, carrier or vessel, and any bank named in the documents.</li>
+        <li><b>When we screen.</b> (a) Before we quote for or accept a new customer. (b) When a booking is made, before we act on it. (c) Again before cargo is released or documents are issued. (d) All existing customers are re-screened whenever the official lists change.</li>
+        <li><b>What we screen.</b> The full legal name and country, and every identifier on the documents and emails: email address, phone number, website, registration or tax number, vessel IMO number. A name alone is not enough, because a listed party can trade under a new name.</li>
+        <li><b>Against which lists.</b> ${COVER}.</li>
+        <li><b>If there is a possible match.</b> Stop work on that shipment. ${me} or a second person compares the details (address, country, identifiers, business) with the official listing. The decision and the reason are recorded in the proof log.</li>
+        <li><b>If it is the same party.</b> We do not proceed. We do not release cargo, documents or funds. ${me} is told the same day and takes legal advice. Blocked property and rejected transactions may have to be reported to OFAC within 10 business days (31 CFR 501.603 and 501.604).</li>
+        <li><b>Red flags.</b> We stop and ask, even when the list check is clear, if: the customer avoids saying who the end user is; the route makes no commercial sense; the consignee changes at the last minute; payment comes from an unrelated third country; a party recently changed its name; an address, phone or email matches a listed party; or Customs detains cargo and names OFAC or BIS.</li>
+        <li><b>Records.</b> A screening certificate is kept in every shipment file. Screening records are kept for at least 10 years (OFAC, 31 CFR 501.601). Export records are kept for at least 5 years (EAR, 15 CFR 762.6).</li>
+        <li><b>Government requests.</b> Any subpoena or request from OFAC, BIS or Customs goes to ${me} the same day. We search all records and answer completely and on time.</li>
+        <li><b>Training and review.</b> Every person who handles bookings reads this procedure and signs below. It is reviewed once a year and after any match.</li>
+      </ol>
+      <div class="sign"><div>Approved by (name, signature, date)</div><div>Read and understood (name, signature, date)</div></div>
+      <p class="sm" style="margin-top:22px">A starter template made with Hugo Trade Shield. The rules cited can change: check the current text and have this reviewed by your trade counsel. Not legal advice.</p>`);
   }
 
   // ---------- wiring ----------
@@ -342,6 +460,7 @@
   $("find").oninput = draw; $("filt").onchange = draw;
   $("recheck").onclick = () => recheckAll(false);
   $("cert").onclick = certificate; $("csvout").onclick = csvOut;
+  $("sh-go").onclick = checkShipment; $("proc").onclick = procedure;
   $("shade").onclick = close;
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
   $("s-save").onclick = () => { S.org.co = $("s-co").value.trim(); S.org.me = $("s-me").value.trim(); save(); $("s-ok").textContent = "Saved."; setTimeout(() => ($("s-ok").textContent = ""), 2000); };
@@ -363,7 +482,7 @@
         const d = JSON.parse(t);
         if (!d || d.v !== 1 || !Array.isArray(d.parties) || !Array.isArray(d.audit)) throw 0;
         if (S.parties.length && !confirm(`Replace the ${S.parties.length} customers here with the ${d.parties.length} in the backup?`)) return;
-        S = Object.assign({ org: { co: "", me: "" }, key: "", alerts: [], lastBuilt: "", lastRun: "", backupAt: "" }, d);
+        S = Object.assign({ org: { co: "", me: "" }, key: "", shipments: [], alerts: [], lastBuilt: "", lastRun: "", backupAt: "" }, d);
         await loadLicence(); fill(); save(); draw(); note("Backup restored.");
       } catch (err) { note("That file is not a Trade Shield backup."); }
       e.target.value = "";
@@ -371,7 +490,7 @@
   };
   $("wipe").onclick = () => {
     if (!confirm("Delete every customer and the whole proof log from this browser? This cannot be undone. Download a backup first if you may need it.")) return;
-    S = { v: 1, org: S.org, key: S.key, parties: [], audit: [], alerts: [], lastBuilt: "", lastRun: "", backupAt: "" };
+    S = { v: 1, org: S.org, key: S.key, parties: [], shipments: [], audit: [], alerts: [], lastBuilt: "", lastRun: "", backupAt: "" };
     save(); draw(); note("Everything was deleted from this browser.");
   };
   function fill() { $("s-co").value = S.org.co || ""; $("s-me").value = S.org.me || ""; $("s-key").value = S.key || ""; }
@@ -385,7 +504,7 @@
       await new Promise((res) => setTimeout(res, 20));
       eng = E.build(doc);
       $("dot").className = "on";
-      $("lstat").textContent = `Lists of ${niceDay(eng.built)} · ${eng.total.toLocaleString("en-US")} listed parties · US, UN, UK`;
+      $("lstat").textContent = `Lists of ${niceDay(eng.built)} · ${eng.total.toLocaleString("en-US")} listed parties · US, EU, UK, UN, Canada`;
       $("covline").textContent = `${eng.total.toLocaleString("en-US")} listed parties, list version ${eng.built}.`;
       return true;
     } catch (e) {

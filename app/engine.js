@@ -9,7 +9,7 @@
   const FREE = new Set(("gmail.com yahoo.com hotmail.com outlook.com live.com aol.com icloud.com mail.ru yandex.ru yandex.com bk.ru list.ru " +
     "inbox.ru rambler.ru 163.com 126.com qq.com sina.com foxmail.com protonmail.com proton.me gmx.com gmx.de web.de msn.com me.com " +
     "ymail.com googlemail.com hotmail.co.uk yahoo.co.uk naver.com yahoo.fr hotmail.fr tutanota.com zoho.com").split(" "));
-  const SEVERE = ["US OFAC SDN", "UN Security Council", "UK Sanctions List", "US BIS Denied Persons", "US BIS Entity List",
+  const SEVERE = ["US OFAC SDN", "UN Security Council", "EU Sanctions List", "UK Sanctions List", "Canada Sanctions (SEMA)", "US BIS Denied Persons", "US BIS Entity List",
     "US State ITAR Debarred", "US OFAC SSI", "US BIS Military End User", "US OFAC CMIC"];
   const KIND = { name: "name", e: "email address", w: "website", p: "phone number", r: "registration number", i: "ship IMO number" };
   const EMAIL = /[a-z0-9._%+-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+/gi;
@@ -96,7 +96,7 @@
   function screen(eng, p) {
     const byK = new Map();
     const nameText = (p.name || "").replace(EMAIL, " ");
-    for (const m of searchNames(eng, nameText, 0.8, 6)) byK.set(m.k, { k: m.k, score: m.score, kind: "name", via: m.via });
+    for (const m of searchNames(eng, nameText, 0.8, 8)) byK.set(m.k, { k: m.k, score: m.score, kind: "name", via: m.via });
     for (const h of lookupIds(eng, extractIds((p.name || "") + " \n " + (p.ids || "")))) {
       const had = byK.get(h.k);                       // an exact email beats the website taken from that same email
       if (!had || had.kind === "name") byK.set(h.k, { k: h.k, score: 1, kind: h.t, via: h.raw });
@@ -108,7 +108,7 @@
     ms.sort((a, b) => (a.kind !== "name") !== (b.kind !== "name") ? (a.kind !== "name" ? -1 : 1)
       : Math.abs(a.score - b.score) < 0.005 ? sev(a.list) - sev(b.list) : b.score - a.score);
     const cc = country(p.cc);
-    return { matches: ms.slice(0, 6), flag: RISKY[cc] ? cc : "" };
+    return { matches: ms.slice(0, 8), flag: RISKY[cc] ? cc : "" };
   }
 
   // a match counts when it is an exact identifier or a name at review level or above
