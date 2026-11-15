@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Hugo Trade Shield · Screening desk</title>
+<!-- The Hugo Trade Shield desk app. Everything a customer types stays in this browser (IndexedDB).
+     The only thing this page downloads is the public sanctions list file (../lists.json). -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 2 4 6v9c0 7.5 5.1 13.4 12 15 6.9-1.6 12-7.5 12-15V6z' fill='%23d97706'/></svg>">
+<style>
+  :root { --ink: #0f1b2d; --ink2: #43506a; --mute: #6b768a; --line: #e3e7ee; --bg: #f4f6f9; --card: #fff; --soft: #f8f9fb;
+    --amber: #d97706; --amber2: #fff4e0; --red: #b42318; --red2: #fdecea; --green: #15803d; --green2: #e8f6ee; --blue: #2563eb; --blue2: #e8f0fe; }
+  @media (prefers-color-scheme: dark) { :root { --ink: #e8ecf3; --ink2: #b8c0cf; --mute: #8b95a7; --line: #2a3345; --bg: #0d1320; --card: #151d2c; --soft: #1a2333;
+    --amber2: #3a2a10; --red2: #3a1714; --green2: #12301e; --blue2: #16264a; } }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font: 15px/1.5 "Inter", "Segoe UI", system-ui, sans-serif; color: var(--ink); background: var(--bg); min-height: 100vh; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  a { color: var(--blue); }
+  header { background: #0f1b2d; color: #fff; }
+  .hw { max-width: 1240px; margin: 0 auto; padding: 0 20px; min-height: 60px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; white-space: nowrap; }
+  .logo small { font-weight: 400; opacity: .6; font-size: 13px; }
+  .plan { font-size: 11px; font-weight: 700; letter-spacing: .06em; background: var(--amber); color: #fff; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; cursor: pointer; border: 0; }
+  .plan.paid, .plan.pilot { background: #15803d; } .plan.expired { background: #b42318; }
+  .lists { margin-left: auto; font-size: 13px; opacity: .85; display: flex; align-items: center; gap: 8px; }
+  .lists i { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; display: inline-block; flex: none; }
+  .lists i.on { background: #22c55e; box-shadow: 0 0 8px #22c55e; } .lists i.err { background: #ef4444; }
+  main { max-width: 1240px; margin: 0 auto; padding: 20px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
+  .tab { border: 1px solid var(--line); background: var(--card); padding: 9px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; color: var(--ink2); display: flex; gap: 8px; align-items: center; }
+  .tab.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .tab .n { font-size: 12px; background: var(--amber); color: #fff; border-radius: 9px; padding: 0 7px; min-width: 20px; text-align: center; }
+  .tab .n:empty { display: none; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+  h2 { font-size: 20px; margin-bottom: 4px; }
+  h3 { font-size: 16px; margin-bottom: 4px; }
+  .sub { color: var(--mute); font-size: 14px; margin-bottom: 14px; }
+  textarea { width: 100%; height: 130px; border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: var(--soft); resize: vertical; font: 13px/1.6 Consolas, "Cascadia Mono", monospace; }
+  input[type=text], input[type=search], select { border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; background: var(--soft); min-width: 0; }
+  .btn { border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 9px 16px; cursor: pointer; font-weight: 600; white-space: nowrap; }
+  .btn:hover { border-color: var(--mute); }
+  .btn.pri { background: var(--amber); border-color: var(--amber); color: #fff; }
+  .btn.red { background: var(--red); border-color: var(--red); color: #fff; }
+  .btn.grn { background: var(--green); border-color: var(--green); color: #fff; }
+  .btn.sm { padding: 5px 10px; font-size: 13px; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .acts { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+  .prog { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; flex: 1; min-width: 120px; display: none; }
+  .prog b { display: block; height: 100%; width: 0; background: var(--amber); transition: width .1s; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  .tile { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; cursor: pointer; }
+  .tile b { font-size: 28px; display: block; line-height: 1.2; }
+  .tile span { color: var(--mute); font-size: 13px; }
+  .tile.hit b { color: var(--red); } .tile.rev b { color: var(--amber); } .tile.clr b { color: var(--green); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--mute); padding: 8px 10px; border-bottom: 1px solid var(--line); font-weight: 600; }
+  td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr.go { cursor: pointer; } tbody tr.go:hover { background: var(--soft); }
+  .tw { overflow-x: auto; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap; }
+  .pill.hit, .pill.blk { background: var(--red2); color: var(--red); } .pill.rev { background: var(--amber2); color: var(--amber); }
+  .pill.clr { background: var(--green2); color: var(--green); } .pill.ok { background: var(--blue2); color: var(--blue); } .pill.new { background: var(--line); color: var(--ink2); }
+  .lst { font-size: 12px; color: var(--mute); }
+  .bar { width: 70px; height: 6px; background: var(--line); border-radius: 3px; display: inline-block; vertical-align: middle; margin-right: 6px; overflow: hidden; }
+  .bar b { display: block; height: 100%; }
+  .flag { font-size: 12px; color: var(--red); font-weight: 600; }
+  .empty { color: var(--mute); text-align: center; padding: 34px 10px; }
+  .qc { display: flex; gap: 10px; flex-wrap: wrap; }
+  .qc input { flex: 1; min-width: 220px; font-size: 16px; padding: 12px 14px; }
+  .qres { margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--soft); }
+  .qres.hit { border-color: var(--red); background: var(--red2); } .qres.rev { border-color: var(--amber); background: var(--amber2); } .qres.clr { border-color: var(--green); background: var(--green2); }
+  .m { padding: 8px 0; border-top: 1px dashed var(--line); font-size: 14px; } .m:first-of-type { border-top: 0; }
+  .alert { border: 1px solid var(--red); background: var(--red2); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .alert.info { border-color: var(--blue); background: var(--blue2); }
+  .alert h3 { color: var(--red); } .alert.info h3 { color: var(--blue); }
+  .alert .it { padding: 8px 0; border-top: 1px dashed var(--line); cursor: pointer; }
+  .notice { border: 1px solid var(--amber); background: var(--amber2); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 14px; }
+  .shade { position: fixed; inset: 0; background: rgba(5, 10, 20, .45); display: none; z-index: 10; }
+  .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(600px, 100%); background: var(--card); z-index: 11; transform: translateX(100%); transition: transform .25s ease; overflow-y: auto; padding: 22px; box-shadow: -10px 0 40px rgba(0, 0, 0, .2); }
+  .drawer.on { transform: none; } .shade.on { display: block; }
+  .x { float: right; border: 0; background: none; font-size: 24px; cursor: pointer; color: var(--mute); line-height: 1; }
+  .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+  .vs > div { background: var(--soft); border: 1px solid var(--line); border-radius: 10px; padding: 12px; overflow-wrap: anywhere; }
+  .vs small { color: var(--mute); font-size: 12px; display: block; margin-bottom: 4px; }
+  mark { background: #fde68a; color: #111; border-radius: 3px; padding: 0 2px; }
+  dl { display: grid; grid-template-columns: 110px 1fr; gap: 4px 12px; font-size: 14px; margin: 8px 0 14px; }
+  dt { color: var(--mute); }
+  .dec { border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--soft); margin-top: 14px; }
+  .dec select, .dec input { width: 100%; margin: 6px 0 10px; background: var(--card); }
+  .note { font-size: 12px; color: var(--mute); margin-top: 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .field { display: block; margin-bottom: 10px; font-size: 13px; color: var(--mute); }
+  .field input { display: block; width: 100%; margin-top: 4px; color: var(--ink); font-size: 15px; }
+  footer { max-width: 1240px; margin: 0 auto; padding: 4px 20px 30px; font-size: 12px; color: var(--mute); }
+  @media (max-width: 760px) { .tiles { grid-template-columns: repeat(2, 1fr); } .vs, .grid2 { grid-template-columns: 1fr; } .lists { margin-left: 0; width: 100%; padding-bottom: 8px; } }
+</style>
+</head>
+<body>
+<header><div class="hw">
+  <div class="logo"><svg width="26" height="26" viewBox="0 0 32 32"><path d="M16 2 4 6v9c0 7.5 5.1 13.4 12 15 6.9-1.6 12-7.5 12-15V6z" fill="#d97706"/><path d="m11 16 4 4 7-8" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Hugo Trade Shield <small>Screening desk</small></div>
+  <button class="plan" id="plan" title="Licence">Trial</button>
+  <div class="lists"><i id="dot"></i><span id="lstat">Loading the lists…</span></div>
+</div></header>
+
+<main>
+  <div class="tabs">
+    <button class="tab on" data-t="today">Today</button>
+    <button class="tab" data-t="book">Customers <span class="n" id="nbook" style="background:var(--mute)"></span></button>
+    <button class="tab" data-t="review">Review <span class="n" id="nrev"></span></button>
+    <button class="tab" data-t="log">Proof log</button>
+    <button class="tab" data-t="set">Settings</button>
+  </div>
+  <div id="notice"></div>
+
+  <section id="t-today">
+    <div id="alerts"></div>
+    <div class="tiles">
+      <div class="tile" data-f=""><b id="k-all">0</b><span>customers watched</span></div>
+      <div class="tile clr" data-f="clr"><b id="k-clr">0</b><span>clear</span></div>
+      <div class="tile rev" data-f="rev"><b id="k-rev">0</b><span>need a quick look</span></div>
+      <div class="tile hit" data-f="hit"><b id="k-hit">0</b><span>on a sanctions list</span></div>
+    </div>
+    <div class="card">
+      <h2>Quick check</h2>
+      <div class="sub">Type or paste a company or person, and anything else you have: country, email, phone, website. An email or a phone number can catch a listed party that has changed its name.</div>
+      <div class="qc"><input type="text" id="q" placeholder="e.g.  Mahan Air   or   Huizhou Youli Fushi Co, sales@yolimachine.com" autocomplete="off"><button class="btn pri" id="qgo">Check</button></div>
+      <div id="qres"></div>
+    </div>
+    <div class="card">
+      <h3>Daily watch</h3>
+      <div class="sub" id="watchline" style="margin-bottom:0">Add customers and they are re-checked every time the official lists change.</div>
+      <div class="acts"><button class="btn" id="recheck">Re-check all customers now</button><div class="prog" id="prog2"><b></b></div><span class="lst" id="took2"></span></div>
+    </div>
+  </section>
+
+  <section id="t-book" style="display:none">
+    <div class="card">
+      <h2>Add customers, shippers, consignees</h2>
+      <div class="sub">One per line: <b>name, country, then any email, phone or website</b>. Or paste straight from Excel, or upload a CSV. They are screened now and watched from then on.</div>
+      <textarea id="inp" spellcheck="false" placeholder="Northwind Pumps Ltd, GB&#10;Mahan Airlines, IR&#10;Lumen Packaging S.A. de C.V., MX, ventas@lumen.mx, +52 55 1234 5678"></textarea>
+      <div class="acts">
+        <button class="btn pri" id="add">Add and screen</button>
+        <label class="btn" style="display:inline-block">Upload CSV<input type="file" id="csv" accept=".csv,.txt,.tsv" hidden></label>
+        <button class="btn" id="sample">Try with 20 sample customers</button>
+        <div class="prog" id="prog"><b></b></div>
+        <span class="lst" id="took"></span>
+      </div>
+    </div>
+    <div class="card tw">
+      <div class="acts" style="margin:0 0 12px">
+        <input type="search" id="find" placeholder="Find a customer" style="flex:1;min-width:180px">
+        <select id="filt"><option value="">All</option><option value="hit">On a list</option><option value="rev">Need a look</option><option value="ok">Cleared by you</option><option value="clr">Clear</option><option value="blk">Stopped</option></select>
+      </div>
+      <table><thead><tr><th>Customer</th><th>Result</th><th>Closest listed party</th><th>Match</th><th>Last checked</th></tr></thead><tbody id="rows"></tbody></table>
+    </div>
+  </section>
+
+  <section id="t-review" style="display:none">
+    <div class="card tw">
+      <h2>Review queue</h2>
+      <div class="sub">Only the customers that need a person. Open one, compare, decide. Every decision is saved with your name, the time and the list version.</div>
+      <table><thead><tr><th>Customer</th><th>Result</th><th>Closest listed party</th><th>Match</th><th>Last checked</th></tr></thead><tbody id="qrows"></tbody></table>
+    </div>
+  </section>
+
+  <section id="t-log" style="display:none">
+    <div class="card tw">
+      <h2>Proof log</h2>
+      <div class="sub">Proof that you screened, when, against which list version, and what you decided. This is what a bank, an auditor or a regulator asks for.</div>
+      <div class="acts" style="margin:0 0 14px"><button class="btn pri" id="cert">Screening certificate</button><button class="btn" id="csvout">Download log (CSV)</button><span class="lst" id="logn"></span></div>
+      <table><thead><tr><th>Time</th><th>Customer</th><th>What happened</th><th>Detail</th><th>By</th><th>Lists</th></tr></thead><tbody id="arows"></tbody></table>
+    </div>
+  </section>
+
+  <section id="t-set" style="display:none">
+    <div class="grid2">
+      <div class="card">
+        <h2>Your company</h2>
+        <div class="sub">Shown on certificates and in the proof log.</div>
+        <label class="field">Company name<input type="text" id="s-co" placeholder="Acme Forwarding Inc"></label>
+        <label class="field">Your name (the person who screens)<input type="text" id="s-me" placeholder="Jane Smith"></label>
+        <button class="btn pri" id="s-save">Save</button> <span class="lst" id="s-ok"></span>
+      </div>
+      <div class="card">
+        <h2>Licence</h2>
+        <div class="sub" id="licline">Trial: quick checks are free. Save up to 5 customers to try the daily watch.</div>
+        <label class="field">Licence key<input type="text" id="s-key" placeholder="TS1.…" autocomplete="off" spellcheck="false"></label>
+        <button class="btn pri" id="s-lic">Activate</button> <span class="lst" id="s-licok"></span>
+        <p class="note">No key yet? <a id="askpilot" href="#">Ask for a free 30-day pilot</a>. Then $120 a month per company, cancel any month.</p>
+      </div>
+      <div class="card">
+        <h2>Your data</h2>
+        <div class="sub">Customer names never leave this computer. They are stored in this browser only, so keep a backup file.</div>
+        <div class="acts" style="margin-top:0"><button class="btn" id="bk-out">Download backup</button><label class="btn" style="display:inline-block">Restore backup<input type="file" id="bk-in" accept=".json" hidden></label><button class="btn" id="wipe">Delete everything</button></div>
+        <p class="note" id="bkline"></p>
+      </div>
+      <div class="card">
+        <h2>What is checked</h2>
+        <div class="sub" id="covline" style="margin-bottom:6px"></div>
+        <p class="note" style="margin-top:0">US Consolidated Screening List (OFAC SDN and other OFAC lists, BIS Entity List, Denied Persons, Unverified and Military End User lists, State Department lists), the UN Security Council list and the UK Sanctions List. The EU list is not included yet. A screening aid, not legal advice: a match is a lead to confirm on the official source.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="shade" id="shade"></div>
+<aside class="drawer" id="drawer"></aside>
+
+<footer>Hugo Trade Shield by OPIIUS. Data: public lists from data.trade.gov, the UN Security Council and the UK FCDO. Your customer list is stored only in this browser.
+  A screening aid, not legal advice. <a href="../">Free single check</a> · <a href="mailto:opiiusservice@gmail.com">opiiusservice@gmail.com</a></footer>
+
+<script src="../match.js"></script>
+<script src="pub.js"></script>
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
